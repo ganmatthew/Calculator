@@ -1,35 +1,39 @@
-int getIntFromNumTok (Token t) {
-  int i, num = 0;
-    for (i = 0; i < strlen(t); i++) {
-      num = num * 10 + (t[i] - 48);
-    }
-    printf("\n[getIntFromNumTok] string %s -> int %d\n", t, num);
-    return num;
+float getFloatFromNumTok (Token t) {
+  return strtof(t, NULL);
 }
 
-int arithmetic (int operand1, int operand2, char operator) {
-  int i;
-  printf("[Arithmetic] %d %c %d\n", operand1, operator, operand2);
+float doArithmetic (float operand1, float operand2, char operator) {
+  float i, num;
+  int op1, op2;
   switch (operator) {
     case '+':
+      printf("[Add] %0.3f %c %0.3f\n", operand1, operator, operand2);
       return operand1 + operand2;
       break;
     case '-':
+      printf("[Subtract] %0.3f %c %0.3f\n", operand1, operator, operand2);
       return operand1 - operand2;
       break;
     case '*':
+      printf("[Multiply] %0.3f %c %0.3f\n", operand1, operator, operand2);
       return operand1 * operand2;
       break;
     case '/':
+      printf("[Divide] %0.3f %c %0.3f\n", operand1, operator, operand2);
       return operand1 / operand2;
       break;
     case '%':
-      return operand1 % operand2;
+      printf("[Modulo] %0f %c %0f\n", operand2, operator, operand1);
+      op1 = (int) operand1;
+      op2 = (int) operand2;
+      return op1 % op2;
       break;
     case '^':
-      for (i = 0; i < operand2; i++)
-        operand1 *= operand1;
-      return operand1;
+      printf("[Power] %0.3f %c %0.3f\n", operand1, operator, operand2);
+      num = operand1;
+      for (i = operand2; i > 0; i--)
+        num *= operand1;
+      return num;
       break;
     default:
       return 0;
@@ -42,42 +46,48 @@ int logic() {
 }
 
 void startEvaluatePostfix (Queue * input, Stack * output) {
-  int i;
+  int i = 0;
   int zeroDivError = 0;
-  Token scanned, op1, op2, temp;
+  float result;
+  Token scanToken, op1, op2, optr;
 
-  output->counter = -1;
+  output->counter = -1; // initialize the stack as empty
   
   printf("\n\n");
-  for (i = 0; i < input->rear + 1; i++) {
+  do {
     printf("[Input Queue] %d/%d: %s\n", i, input->count, input->values[i]); // debugging purposes only
-    strcpy(scanned, input->values[i]);
+    strcpy(scanToken, input->values[i]);
 
-    if (!isOperator(scanned[0])) { // check if scanned token is an operand
-      printf("[Operand] %c is an operand\n\n", scanned[0]);
-      pushToken(output, scanned);
+    if (!isOperator(scanToken[0])) { // check if scanned token is an operand
+      printf("[Operand %s] %c is an operand\n\n", scanToken, scanToken[0]);
+      pushToken(output, scanToken);
     }
 
     else { // check if scanned token is an operator
-      printf("[Operator] %c is an operator\n\n", scanned[0]);
+      printf("[Operator %s] %c is an operator\n\n", scanToken, scanToken[0]);
       popToken(output, op2);
       popToken(output, op1);
-      if ( (getIntFromNumTok(op2) == 0) && scanned[0] == '/') {
+      printf("[Operator #1 = %s]\n", op1);
+      printf("[Operator #2 = %s]\n", op2);
+      if ( (getFloatFromNumTok(op2) == 0) && scanToken[0] == '/') { // check if division operator is in use and if divisor is a zero
         zeroDivError = 1;
         printf("[Error] Division by zero detected!\n");
       }
       else {
-        printf("[Arithmetic Result] = %d\n", arithmetic(getIntFromNumTok(op1), getIntFromNumTok(op2), scanned[0]));
-        sprintf(temp, "%d", arithmetic(getIntFromNumTok(op2), getIntFromNumTok(op1), scanned[0]));
-        pushToken(output, temp);
+        result = doArithmetic(getFloatFromNumTok(op1), getFloatFromNumTok(op2), scanToken[0]);
+        printf("[Arithmetic Result] = %0.3f\n", result);
+        sprintf(optr, "%0.3f", result);
+        pushToken(output, optr);
       }
-      
     }
-  }
+    i++;
+  } while (i < input->rear + 1 && !zeroDivError);
 
   if (!zeroDivError) {
-    for (i = 0; i < output->counter + 1; i++)
-      printf("[Final Result]: %s\n", output->values[i]); // debugging purposes only
+    for (i = 0; i < output->counter + 1; i++) {
+      sprintf(output->values[i], "%.0f", getFloatFromNumTok(output->values[i])); // get token and remove decimal places
+      printf("[Final Result]: %s\n", output->values[i]); // display final result after decimal place change
+    }
   }
   else {
     printf("Division by zero error!\n");

@@ -18,20 +18,24 @@ int isOperator(char c);
 #include "evaluate-postfix.c"
 
 int main () {
-  Queue infix, postfix;
-  Stack result;
-  Token equation;
+  int menuLoop = 1;
 
   do {
+    Queue infix, postfix;
+    Stack result;
+    Token equation;
+    
     printf("\n");
     scanf("%s", equation);
 
-    startInfixToPostfix(&infix, &postfix, equation);
-    startEvaluatePostfix(&postfix, &result);
+    if (strcmp(equation, "QUIT") != 0 && strcmp(equation, "quit") != 0) {
+      startInfixToPostfix(&infix, &postfix, equation);
+      startEvaluatePostfix(&postfix, &result);
+    }
+    else
+      return menuLoop = 0;
 
-  } while (strcmp(equation, "QUIT") != 0);
-
-  return 0;
+  } while (menuLoop);
 }
 
 int getOperatorPrecedence(Token t)

@@ -7,8 +7,8 @@ void pushToken(Stack * s, Token t)
     if (s->counter != MAXSIZE)
     {
         s->counter++;
-        printf("[pushToken] t = %s\n", s->values[s->counter]);
         strcpy(s->values[s->counter], t);    
+        printf("[pushToken] t = %s\n", s->values[s->counter]);
     }
     else
     {
@@ -23,8 +23,8 @@ int popToken(Stack * s, Token t)
     if (s->counter != -1)
     {
         strcpy(t, s->values[s->counter]);
-        s->counter--;
         printf("[popToken] t = %s\n", s->values[s->counter]);
+        s->counter--;
         return 1;
     }
     else
