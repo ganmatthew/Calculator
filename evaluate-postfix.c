@@ -31,7 +31,7 @@ float doArithmetic (float operand1, float operand2, char operator) {
     case '^':
       printf("[Power] %0.3f %c %0.3f\n", operand1, operator, operand2);
       num = operand1;
-      for (i = operand2; i > 0; i--)
+      for (i = 0; i < operand2; ++i)
         num *= operand1;
       return num;
       break;
@@ -47,7 +47,7 @@ int logic() {
 
 void startEvaluatePostfix (Queue * input, Stack * output) {
   int i = 0;
-  int zeroDivError = 0;
+  int errorCheck = 0;
   float result;
   Token scanToken, op1, op2, optr;
 
@@ -69,9 +69,13 @@ void startEvaluatePostfix (Queue * input, Stack * output) {
       popToken(output, op1);
       printf("[Operator #1 = %s]\n", op1);
       printf("[Operator #2 = %s]\n", op2);
-      if ( (getFloatFromNumTok(op2) == 0) && scanToken[0] == '/') { // check if division operator is in use and if divisor is a zero
-        zeroDivError = 1;
+      if ( (getFloatFromNumTok(op2) == 0) && scanToken[0] == '/') { // error check 1: check if division operator is in use and if divisor is a zero
+        errorCheck = 1;
         printf("[Error] Division by zero detected!\n");
+      }
+      else if ( (getFloatFromNumTok(op2) == 0) && scanToken[0] == '%') { // error check 2: check if modulo operator is in use and if second number is a zero
+        errorCheck = 2;
+        printf("[Error] Modulo by zero detected!\n");
       }
       else {
         result = doArithmetic(getFloatFromNumTok(op1), getFloatFromNumTok(op2), scanToken[0]);
@@ -81,18 +85,22 @@ void startEvaluatePostfix (Queue * input, Stack * output) {
       }
     }
     i++;
-  } while (i < input->rear + 1 && !zeroDivError);
+  } while (i < input->rear + 1 && errorCheck == 0);
 
-  if (!zeroDivError) {
-    for (i = 0; i < output->counter + 1; i++) {
-      sprintf(output->values[i], "%.0f", getFloatFromNumTok(output->values[i])); // get token and remove decimal places
-      printf("[Final Result]: %s\n", output->values[i]); // display final result after decimal place change
+  switch (errorCheck) {
+    case 1: // error 1
+      printf("Division by zero error!\n");
+      break;
+    case 2: // error 2
+      printf("Modulo by zero error!\n");
+      break;
+    default: // no error
+      for (i = 0; i < output->counter + 1; i++) {
+        sprintf(output->values[i], "%.0f", getFloatFromNumTok(output->values[i])); // get token and remove decimal places
+       printf("[Final Result]: %s\n", output->values[i]); // display final result after decimal place change
     }
+    break;
   }
-  else {
-    printf("Division by zero error!\n");
-  }
-  
 }
 
 /*
