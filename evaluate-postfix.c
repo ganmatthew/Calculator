@@ -1,37 +1,35 @@
-float getFloatFromNumTok (Token t) {
-  return strtof(t, NULL);
+int getIntFromStrTok (Token t) {
+  float n = strtof(t, NULL);
+  return (int) n;
 }
 
-float doArithmetic (float operand1, float operand2, char operator) {
-  float i, num;
-  int op1, op2;
+int doArithmetic (int operand1, int operand2, char operator) {
+  int i, num;
   switch (operator) {
     case '+':
-      printf("[Add] %0.3f %c %0.3f\n", operand1, operator, operand2);
+      printf("[Add] %d %c %d\n", operand1, operator, operand2);
       return operand1 + operand2;
       break;
     case '-':
-      printf("[Subtract] %0.3f %c %0.3f\n", operand1, operator, operand2);
+      printf("[Subtract] %d %c %0d\n", operand1, operator, operand2);
       return operand1 - operand2;
       break;
     case '*':
-      printf("[Multiply] %0.3f %c %0.3f\n", operand1, operator, operand2);
+      printf("[Multiply] %d %c %d\n", operand1, operator, operand2);
       return operand1 * operand2;
       break;
     case '/':
-      printf("[Divide] %0.3f %c %0.3f\n", operand1, operator, operand2);
+      printf("[Divide] %d %c %d\n", operand1, operator, operand2);
       return operand1 / operand2;
       break;
     case '%':
-      printf("[Modulo] %0f %c %0f\n", operand2, operator, operand1);
-      op1 = (int) operand1;
-      op2 = (int) operand2;
-      return op1 % op2;
+      printf("[Modulo] %d %c %d\n", operand2, operator, operand1);
+      return operand1 % operand2;
       break;
     case '^':
-      printf("[Power] %0.3f %c %0.3f\n", operand1, operator, operand2);
+      printf("[Power] %d %c %d\n", operand1, operator, operand2);
       num = operand1;
-      for (i = 0; i < operand2; ++i)
+      for (i = 0; i < operand2 - 1; ++i)
         num *= operand1;
       return num;
       break;
@@ -47,8 +45,7 @@ int logic() {
 
 void startEvaluatePostfix (Queue * input, Stack * output) {
   int i = 0;
-  int errorCheck = 0;
-  float result;
+  int errorCheck = 0, result;
   Token scanToken, op1, op2, optr;
 
   output->counter = -1; // initialize the stack as empty
@@ -69,18 +66,18 @@ void startEvaluatePostfix (Queue * input, Stack * output) {
       popToken(output, op1);
       printf("[Operator #1 = %s]\n", op1);
       printf("[Operator #2 = %s]\n", op2);
-      if ( (getFloatFromNumTok(op2) == 0) && scanToken[0] == '/') { // error check 1: check if division operator is in use and if divisor is a zero
+      if ( (getIntFromStrTok(op2) == 0) && scanToken[0] == '/') { // error check 1: check if division operator is in use and if divisor is a zero
         errorCheck = 1;
         printf("[Error] Division by zero detected!\n");
       }
-      else if ( (getFloatFromNumTok(op2) == 0) && scanToken[0] == '%') { // error check 2: check if modulo operator is in use and if second number is a zero
+      else if ( (getIntFromStrTok(op2) == 0) && scanToken[0] == '%') { // error check 2: check if modulo operator is in use and if second number is a zero
         errorCheck = 2;
         printf("[Error] Modulo by zero detected!\n");
       }
       else {
-        result = doArithmetic(getFloatFromNumTok(op1), getFloatFromNumTok(op2), scanToken[0]);
-        printf("[Arithmetic Result] = %0.3f\n", result);
-        sprintf(optr, "%0.3f", result);
+        result = doArithmetic(getIntFromStrTok(op1), getIntFromStrTok(op2), scanToken[0]);
+        printf("[Arithmetic Result] = %d\n", result);
+        sprintf(optr, "%d", result);
         pushToken(output, optr);
       }
     }
@@ -88,16 +85,14 @@ void startEvaluatePostfix (Queue * input, Stack * output) {
   } while (i < input->rear + 1 && errorCheck == 0);
 
   switch (errorCheck) {
-    case 1: // error 1
+    case 1: // error 1 or error 2
+    case 2:
       printf("Division by zero error!\n");
-      break;
-    case 2: // error 2
-      printf("Modulo by zero error!\n");
       break;
     default: // no error
       for (i = 0; i < output->counter + 1; i++) {
-        sprintf(output->values[i], "%.0f", getFloatFromNumTok(output->values[i])); // get token and remove decimal places
-       printf("[Final Result]: %s\n", output->values[i]); // display final result after decimal place change
+        sprintf(output->values[i], "%d", getIntFromStrTok(output->values[i])); // get token and remove decimal places
+       printf("[Final Result]: %d\n", getIntFromStrTok(output->values[i])); // display final result after decimal place change
     }
     break;
   }
