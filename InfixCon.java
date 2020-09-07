@@ -69,14 +69,15 @@ public class InfixCon
                     }
                     else
                     {
-                        while (!op.isEmpty() && opValue(in.peek()) <= opValue(op.peek())
+                        while (!op.isEmpty() && opValue(in.peek()) <= opValue(op.peek()))
                         {
                             out.Enqueue(op.pop());
-                        }
+                        
                         op.push(in.Dequeue());
+                        }
                     }
                 }
-            }
+            }        
         }
 
         while (!op.isEmpty())
@@ -90,5 +91,6 @@ public class InfixCon
         }
 
         return output;
+
     }
 }
