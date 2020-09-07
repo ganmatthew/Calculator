@@ -1,36 +1,38 @@
 import java.util.*;
-public class Stack
+public class Queue
 {
     private ArrayList <String> val;
 
-    public Stack()
+    public Queue()
     {
         val = new ArrayList <String> ();
     }
 
-    public String pop()
-    {
-        String s = null;
-        if (!val.isEmpty())
-        {
-            s = val.get(val.size());
-            val.remove(val.size());
-        }
-        return s;
-    }
-
-    public void push(String s)
+    public void Enqueue(String s)
     {
         val.add(s);
     }
 
+    public String Dequeue()
+    {
+        String s = null;
+        if (!val.isEmpty())
+        {
+            s = val.get(0);
+            val.remove(0);
+        }
+        return s;
+    }
+
     public String peek()
     {
-        return val.get(val.size());
+        return val.get(0);
     }
 
     public boolean isEmpty()
     {
         return 0 == val.size();
     }
+
 }
+
