@@ -1,13 +1,8 @@
-/*
-  TODO: Port code from using built-in methods since ayaw ni sir :(
-*/
-
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 public class InfixCon
 {
-
     static int opValue (String s)
     {
         //System.out.println(s);
@@ -24,137 +19,76 @@ public class InfixCon
         if (s.contains("&&") || s.contains("||"))
             return 1;
         return 0;
-        /*switch (s)
-        {
-            case ")":
-            case "(":
-            i = 6; 
-            break;
-
-            case "*":
-            case "/":
-            case "%":
-            i = 5; 
-            break;
-
-            case "+":
-            case "-":
-            i = 4;
-            break;
-
-            case "==":
-            case "!=":
-            i = 3;
-            break;
-
-            case ">":
-            case ">=":
-            case "<":
-            case "<=":
-            i = 2;
-            break;
-
-            case "&&":
-            case "||":
-            i = 1;
-            break;
-        }*/
     }
-    public static void main(String[] args)
+
+    public static String ConvertInfixToPostFix(String s)
     {
-        Stack <String> op_stack = new Stack <String> ();
-        Queue <String> in_queue = new LinkedList<>();
-        Queue <String> out_queue = new LinkedList<>();
+        String output = null;
 
-        String test = "5*4%3/2+1-2121";
-        String test2 = "(1+2)/(3+4)";
+        Stack op = new Stack();
+        Queue in = new Queue();
+        Queue out = new Queue();
 
-        String p = "([^%<>=&!|()+*/-][&=|]?)|[0-9]+";
-        
-        Pattern r = Pattern.compile(p);
-        Matcher m = r.matcher(test2);
+        Pattern r = Pattern.compile("([^%<>=&!|()+*/-][&=|]?)|[0-9]+");
+        Matcher m = r.matcher(s);
 
         while (m.find())
         {
-            System.out.print("[" + m.group() + "] ");
-            in_queue.add(m.group());
+            in.Enqueue(m.group());
         }
 
-        /*
-                else if (in_queue.peek().contentEquals("("))
-                    {
-                        op_stack.push(in_queue.poll());
-                    }
-                    else if (in_queue.peek().contentEquals(")"))
-                    {
-                        //in_queue.poll();
-                        while (!op_stack.isEmpty() && !(op_stack.peek().contentEquals("(")))
-                        {
-                            out_queue.add(op_stack.pop());
-                        }
-                        //op_stack.pop();
-                        op_stack.remove(")");
-                        op_stack.remove("(");
-                    }
-
-        */
-
-        System.out.println("");
-
-        while (!in_queue.isEmpty())
+        while (!in.isEmpty())
         {
-            if (in_queue.peek().contentEquals("("))
+            if (in.peek().contentEquals("("))
             {
-                op_stack.push(in_queue.poll());
+                op.push(in.Dequeue());
             }
-            else if (in_queue.peek().contentEquals(")"))
+            else if (in.peek().contentEquals(")"))
             {
-                in_queue.poll();
-                while (!op_stack.isEmpty() && !(op_stack.peek().contentEquals("(")))
+                in.Dequeue();
+                while (!op.isEmpty() && !(op.peek().contentEquals("(")))
                 {
-                    out_queue.add(op_stack.pop());
+                    out.Enqueue(op.pop());
                 }
-                op_stack.pop();
             }
-            else if (opValue(in_queue.peek()) == 0)
+            else if (opValue(in.peek()) == 0)
             {
-                out_queue.add(in_queue.poll());
+                out.Enqueue(in.Dequeue());
             }
-            else if (opValue(in_queue.peek()) > 0)
-            {   
-                if (op_stack.isEmpty())
+            else if (opValue(in.peek()) > 0)
+            {
+                if (op.isEmpty())
                 {
-                    op_stack.push(in_queue.poll());
+                    op.push(in.Dequeue());
                 }
                 else
                 {
-                    if (opValue(in_queue.peek()) > opValue(op_stack.peek()))
+                    if (opValue(in.peek()) > opValue(op.peek()))
                     {
-                        op_stack.push(in_queue.poll());
+                        op.push(in.Dequeue());
                     }
-                    else 
+                    else
                     {
-                        while (!op_stack.isEmpty() && (opValue(in_queue.peek()) <= opValue(op_stack.peek())))
+                        while (!op.isEmpty() && opValue(in.peek()) <= opValue(op.peek())
                         {
-                            //if (opValue(in_queue.peek()) <= opValue(op_stack.peek()))
-                            out_queue.add(op_stack.pop());
+                            out.Enqueue(op.pop());
                         }
-                        op_stack.push(in_queue.poll());
+                        op.push(in.Dequeue());
                     }
                 }
             }
         }
 
-        while (!op_stack.isEmpty())
+        while (!op.isEmpty())
         {
-            out_queue.add(op_stack.pop());
+            out.Enqueue(op.pop());
         }
 
-        while (!out_queue.isEmpty())
+        while (!out.isEmpty())
         {
-            System.out.print(out_queue.poll() + " ");
+            output.concat(out.Dequeue())
         }
 
-
+        return output;
     }
 }
