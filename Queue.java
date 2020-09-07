@@ -34,5 +34,15 @@ public class Queue
         return 0 == val.size();
     }
 
+    public int getSize()
+    {
+        return val.size();
+    }
+
+    public String getValue (int index)
+    {
+        return val.get(index);
+    }
+
 }
 

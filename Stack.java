@@ -13,8 +13,8 @@ public class Stack
         String s = null;
         if (!val.isEmpty())
         {
-            s = val.get(val.size());
-            val.remove(val.size());
+            s = val.get(val.size() - 1);
+            val.remove(val.size() - 1);
         }
         return s;
     }
@@ -32,5 +32,15 @@ public class Stack
     public boolean isEmpty()
     {
         return 0 == val.size();
+    }
+
+    public int getSize()
+    {
+        return val.size();
+    }
+
+    public String getValue (int index)
+    {
+        return val.get(index);
     }
 }
