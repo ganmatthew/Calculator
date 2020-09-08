@@ -26,7 +26,7 @@ public class Stack
 
     public String peek()
     {
-        return val.get(val.size());
+        return val.get(val.size() - 1);
     }
 
     public boolean isEmpty()

@@ -31,13 +31,13 @@ public class Driver {
       String QUIT_COMMAND = "quit";
 
       System.out.println();
-      //infixExp = kb.next();
-      postfixExp = kb.nextLine();
+      infixExp = kb.nextLine();
+      //postfixExp = kb.nextLine();
 
-      //if (!infixExp.equalsIgnoreCase(QUIT_COMMAND)) {
-      if (!postfixExp.equalsIgnoreCase(QUIT_COMMAND)) {
-        //postfixExp = InfixCon.ConvertInfixToPostFix(infixExp, conStack, infixQueue, postfixQueue);
-        manualQueueing (postfixExp, postfixQueue);
+      if (!infixExp.equalsIgnoreCase(QUIT_COMMAND)) {
+      //if (!postfixExp.equalsIgnoreCase(QUIT_COMMAND)) {
+        postfixExp = InfixCon.ConvertInfixToPostFix(infixExp, conStack, infixQueue, postfixQueue);
+        //manualQueueing (postfixExp, postfixQueue);
 
         System.out.println(postfixExp);
 

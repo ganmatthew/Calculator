@@ -24,6 +24,7 @@ public class InfixCon
 
     public static String ConvertInfixToPostFix(String s, Stack op, Queue in, Queue out)
     {
+        int i;
         String output = "";
 
         Pattern r = Pattern.compile("([%<>=&!|()+*/-^][&=|]?)|[0-9]+");
@@ -82,9 +83,9 @@ public class InfixCon
         }
 
         
-        while (!out.isEmpty())
+        for (i = 0; i < out.getSize(); i++)
         {
-            output += out.Dequeue();
+            output += out.getValue(i);
             output += " ";
         }
         
