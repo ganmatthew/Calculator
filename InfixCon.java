@@ -24,9 +24,9 @@ public class InfixCon
 
     public static String ConvertInfixToPostFix(String s, Stack op, Queue in, Queue out)
     {
-        String output = new String();
+        String output = "";
 
-        Pattern r = Pattern.compile("([^%<>=&!|()+*/-][&=|]?)|[0-9]+");
+        Pattern r = Pattern.compile("([%<>=&!|()+*/-^][&=|]?)|[0-9]+");
         Matcher m = r.matcher(s);
 
         while (m.find())
@@ -69,9 +69,8 @@ public class InfixCon
                         while (!op.isEmpty() && opValue(in.peek()) <= opValue(op.peek()))
                         {
                             out.Enqueue(op.pop());
-                        
-                        op.push(in.Dequeue());
                         }
+                        op.push(in.Dequeue());
                     }
                 }
             }        
@@ -82,17 +81,19 @@ public class InfixCon
             out.Enqueue(op.pop());
         }
 
-        /*
+        
         while (!out.isEmpty())
         {
             output += out.Dequeue();
+            output += " ";
         }
-        */
-
+        
+        /*
         int i;
-        for (i = 0; i < out.getSize() + 1; i++) {
+        for (i = 0; i < out.getSize(); i++) {
           output += out.getValue(i);
         }
+        */
 
         return output;
 
