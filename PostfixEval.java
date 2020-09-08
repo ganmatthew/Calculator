@@ -28,27 +28,48 @@ class PostfixEval {
         return false;
     }
   }
-  
+
+  private static int getPostfixOperatorType (char c) {
+    switch (c) {
+      case '^':
+      case '*':
+      case '/':
+      case '%':
+      case '+':
+      case '-':
+        return 1;
+      case '<':
+      case '>':
+      case '=':
+      case '!':
+      case '&':
+      case '|':
+        return 2;
+      default:
+        return 0;
+    }
+  }
+   
   private static int doArithmetic (int operand1, int operand2, char operator) {
     int n, num;
     switch (operator) {
       case '+':
-        System.out.println("[Add] " + operand1 + " " + operator + " " + operand2);
+        //System.out.println("[Add] " + operand1 + " " + operator + " " + operand2);
         return operand1 + operand2;
       case '-':
-        System.out.println("[Subtract] " + operand1 + " " + operator + " " + operand2);
+        //System.out.println("[Subtract] " + operand1 + " " + operator + " " + operand2);
         return operand1 - operand2;
       case '*':
-        System.out.println("[Multiply] " + operand1 + " " + operator + " " + operand2);
+        //System.out.println("[Multiply] " + operand1 + " " + operator + " " + operand2);
         return operand1 * operand2;
       case '/':
-        System.out.println("[Divide] " + operand1 + " " + operator + " " + operand2);
+        //System.out.println("[Divide] " + operand1 + " " + operator + " " + operand2);
         return operand1 / operand2;
       case '%':
-        System.out.println("[Modulo] " + operand2 + " " + operator + " " + operand1);
+        //System.out.println("[Modulo] " + operand2 + " " + operator + " " + operand1);
         return operand1 % operand2;
       case '^':
-        System.out.println("[Exponentiation] " + operand1 + " " + operator + " " + operand2);
+        //System.out.println("[Exponentiation] " + operand1 + " " + operator + " " + operand2);
         num = operand1;
         for (n = 0; n < operand2 - 1; ++n)
           num *= operand1;
@@ -58,21 +79,37 @@ class PostfixEval {
     }
   }
 
-  private static int logic() {
-    return 0;
+  private static int doRelational (int operand1, int operand2, String operator) {
+    int value = Integer.compare(operand1, operand2);
+    switch (operator) {
+      case ">":
+        return (value > 0) ? 1 : 0;     // true if result is positive (greater than)
+      case ">=":
+        return (value >= 0) ? 1 : 0;    // true if result is 0 or positive (greater than equals)
+      case "!=":
+        return (value != 0) ? 1 : 0;    // true if result is 0 (not equals)
+      case "==":
+        return (value == 0) ? 1 : 0;    // true if result is 0 (equals)
+      case "<=":
+        return (value <= 0) ? 1 : 0;    // true if result is 0 or negative (less than equals)
+      case "<":
+        return (value < 0) ? 1 : 0;     // true if result is negative (less than)
+      default:
+        return 0;
+    }
   }
 
-  private static Boolean checkForDivError (String scanToken, String op1, String op2) {
-    if ( (getIntegerFromString(op2) == 0) && scanToken.charAt(0) == '/') { // error check 1: check if division operator is in use and if divisor is a zero
-      System.out.println("[Error] Division by zero detected!");
+  private static Boolean checkForDivError (char operator, String op1, String op2) {
+    if ( (getIntegerFromString(op2) == 0) && operator == '/') { // error check 1: check if division operator is in use and if divisor is a zero
+      //System.out.println("[Error] Division by zero detected!");
       return true;
     }
     return false;
   }
 
-  private static Boolean checkForModError (String scanToken, String op1, String op2) {
-    if ( (getIntegerFromString(op2) == 0) && scanToken.charAt(0) == '%') { // error check 1: check if division operator is in use and if divisor is a zero
-      System.out.println("[Error] Modulo by zero detected!");
+  private static Boolean checkForModError (char operator, String op1, String op2) {
+    if ( (getIntegerFromString(op2) == 0) && operator == '%') { // error check 1: check if division operator is in use and if divisor is a zero
+      //System.out.println("[Error] Modulo by zero detected!");
       return true;
     }
     return false;
@@ -88,32 +125,38 @@ class PostfixEval {
     String op2 = new String();
     String exp = new String();
 
-    System.out.println();
-    System.out.println();
-
     do {
-      System.out.println("[Input Queue] " + i + "/" + input.getSize() + ": " + input.getValue(i)); // debugging purposes only
+      //System.out.println("[Input Queue] " + i + "/" + input.getSize() + ": " + input.getValue(i)); // debugging purposes only
       scanToken = input.getValue(i);
 
-      System.out.println("[scanToken index 0] = " + scanToken.charAt(0) );
+      //System.out.println("[scanToken index 0] = " + scanToken.charAt(0) );
 
       if (!isOperator(scanToken.charAt(0))) { // check if scanned token is an operand
-        System.out.println("[Operand " + scanToken + "] " + scanToken);
+        //System.out.println("[Operand " + scanToken + "] " + scanToken);
         output.push(scanToken);
       }
   
       else { // check if scanned token is an operator
-        System.out.println("[Operator " + scanToken + "] " + scanToken);
+        //System.out.println("[Operator " + scanToken + "] " + scanToken);
         op2 = output.pop();
         op1 = output.pop();
-        System.out.println("[Operand A = " + op1);
-        System.out.println("[Operand B = " + op2);
+        //System.out.println("[Operand A = " + op1);
+        //System.out.println("[Operand B = " + op2);
 
-        errorCheck = checkForDivError(scanToken, op1, op2) && checkForModError(scanToken, op1, op2);
-        System.out.println("[ErrorCheck] " + errorCheck); // debugging purposes only
+        errorCheck = (checkForDivError(scanToken.charAt(0), op1, op2) || checkForModError(scanToken.charAt(0), op1, op2));
+        //System.out.println("[ErrorCheck] " + errorCheck); // debugging purposes only
         if (!errorCheck) {
-          result = doArithmetic(getIntegerFromString(op1), getIntegerFromString(op2), scanToken.charAt(0));
-          System.out.println("[Arithmetic Result] = " + result);
+          switch (getPostfixOperatorType(scanToken.charAt(0))) {
+            case 1:     // for arithmetic calculations
+              result = doArithmetic(getIntegerFromString(op1), getIntegerFromString(op2), scanToken.charAt(0));
+              break;
+            case 2:     // for relational and logical calculations
+              result = doRelational(getIntegerFromString(op1), getIntegerFromString(op2), scanToken);
+              break;
+            default:
+              break;
+          }
+          //System.out.println("[Arithmetic Result] = " + result);
           exp = Integer.toString(result);
           output.push(exp);
         }
