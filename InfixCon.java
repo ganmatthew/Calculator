@@ -29,7 +29,7 @@ public class InfixCon
         int i;
         String output = "";
 
-        Pattern r = Pattern.compile("(\\^|[%<>=&!|()+*/-][&=|]?)|[0-9]+");
+        Pattern r = Pattern.compile("[0-9]+|[%\\^!()+*/-]|([=&|])\\1|[<>]+=?");
         Matcher m = r.matcher(s);
 
         while (m.find())

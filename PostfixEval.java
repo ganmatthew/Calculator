@@ -1,5 +1,5 @@
 class PostfixEval {
-  private static int result;
+  private static Boolean errorCheck = false;
 
   public PostfixEval() {};
 
@@ -79,8 +79,11 @@ class PostfixEval {
     }
   }
 
-  private static int doRelational (int operand1, int operand2, String operator) {
+  private static int doRelLogic (int operand1, int operand2, String operator) {
     int value = Integer.compare(operand1, operand2);
+    Boolean op1 = (operand1 > 0) ? true : false;
+    Boolean op2 = (operand2 > 0) ? true : false;
+
     switch (operator) {
       case ">":
         return (value > 0) ? 1 : 0;     // true if result is positive (greater than)
@@ -94,8 +97,16 @@ class PostfixEval {
         return (value <= 0) ? 1 : 0;    // true if result is 0 or negative (less than equals)
       case "<":
         return (value < 0) ? 1 : 0;     // true if result is negative (less than)
+
+      case "&&":
+        return (op1 && op2) ? 1 : 0;    // true based on result after conjunction
+      case "||":
+        return (op1 || op2) ? 1 : 0;    // true based on result after disjunction
+      case "!":
+        return (op1) ? 1 : 0;           // true based on result after negation
       default:
         return 0;
+        
     }
   }
 
@@ -114,11 +125,15 @@ class PostfixEval {
     }
     return false;
   }
+
+  public static Boolean getErrorType () {
+    return errorCheck;
+  }
   
   public static int startEvaluatePostfix (Queue input, Stack output) {
     int i = 0;
     int result = 0;
-    Boolean errorCheck = false;
+    errorCheck = false;
 
     String scanToken = new String();
     String op1 = new String();
@@ -151,7 +166,7 @@ class PostfixEval {
               result = doArithmetic(getIntegerFromString(op1), getIntegerFromString(op2), scanToken.charAt(0));
               break;
             case 2:     // for relational and logical calculations
-              result = doRelational(getIntegerFromString(op1), getIntegerFromString(op2), scanToken);
+              result = doRelLogic(getIntegerFromString(op1), getIntegerFromString(op2), scanToken);
               break;
             default:
               break;
@@ -168,6 +183,7 @@ class PostfixEval {
 
     if (errorCheck)
       System.out.println("Division by zero error!");
+
     return result;
   }
 }
