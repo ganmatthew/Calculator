@@ -27,7 +27,7 @@ public class InfixCon
         int i;
         String output = "";
 
-        Pattern r = Pattern.compile("([%<>=&!|()+*/-^][&=|]?)|[0-9]+");
+        Pattern r = Pattern.compile("(\\^|[%<>=&!|()+*/-][&=|]?)|[0-9]+");
         Matcher m = r.matcher(s);
 
         while (m.find())
@@ -48,6 +48,7 @@ public class InfixCon
                 {
                     out.Enqueue(op.pop());
                 }
+                op.pop();
             }
             else if (opValue(in.peek()) == 0)
             {
