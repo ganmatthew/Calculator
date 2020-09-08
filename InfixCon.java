@@ -7,6 +7,8 @@ public class InfixCon
     static int opValue (String s)
     {
         //System.out.println(s);
+        if (s.contains("!"))
+            return 7;
         if (s.contains("^"))
             return 6;
         if (s.contains("*") || s.contains("/") || s.contains("%"))
