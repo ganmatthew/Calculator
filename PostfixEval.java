@@ -75,7 +75,11 @@ class PostfixEval {
         return operand1 % operand2;
       case '^':
         //System.out.println("[Exponentiation] " + operand1 + " " + operator + " " + operand2);
-        num = operand1;
+        if (operand1 < 1) // if base is 0 or negative, return 0
+          return 0;
+        if (operand2 < 1) // if exponent is 0 or negative, return 1
+          return 1;
+        num = operand1;  
         for (n = 0; n < operand2 - 1; ++n)
           num *= operand1;
         return num;
@@ -154,7 +158,7 @@ class PostfixEval {
 
       System.out.println("[scanToken index 0] = " + scanToken.charAt(0) );
 
-      if (!isOperator(scanToken.charAt(0))) { // check if scanned token is an operand
+      if (!isOperator(scanToken.charAt(0)) && getPostfixOperatorType(scanToken.charAt(0)) != '!') { // check if scanned token is an operand
         System.out.println("[Operand " + scanToken + "] " + scanToken);
         output.push(scanToken);
       }
@@ -163,6 +167,12 @@ class PostfixEval {
         System.out.println("[Operator " + scanToken + "] " + scanToken);
         op2 = output.pop();
         op1 = output.pop();
+
+        if (getPostfixOperatorType(scanToken.charAt(0)) == '!' && scanToken.length() == 1 && op1 == null || op2 == null) {
+          op1 = "0";
+          op2 = "0";
+        }
+
         System.out.println("[Operand A = " + op1);
         System.out.println("[Operand B = " + op2);
 
