@@ -2,6 +2,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 public class InfixCon
 {
+    static StringBuilder sb = new StringBuilder();
     public InfixCon() {}
 
     static int opValue (String s)
@@ -85,7 +86,6 @@ public class InfixCon
             out.Enqueue(op.pop());
         }
 
-        
         for (i = 0; i < out.getSize(); i++)
         {
             output += out.getValue(i);

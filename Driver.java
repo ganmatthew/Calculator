@@ -20,7 +20,6 @@ public class Driver {
   private static void displayProgram (Scanner kb, Boolean menuLoop) {
     do {
       int result = 0;
-      Boolean hasError = false;
 
       Queue infixQueue = new Queue();
       Queue postfixQueue = new Queue();
@@ -47,8 +46,10 @@ public class Driver {
         if (!PostfixEval.getErrorType())
           System.out.println(result);
       }
-      else
+      else {
         menuLoop = false;
+        kb.close();
+      }
 
     }
     while (menuLoop);

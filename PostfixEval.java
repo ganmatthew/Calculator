@@ -1,14 +1,13 @@
 class PostfixEval {
   private static Boolean errorCheck = false;
+  private static Boolean checkForNeg = false;
 
   public PostfixEval() {};
 
   private static int getIntegerFromString (String t) {
     if (t == null) {
-      System.out.println("[getIntegerFromString] Converting null to 0");
       t = "0";
     }
-    System.out.println("[getIntegerFromString] Converting " + t  + " into integer format");
     return Integer.parseInt(t);
   }
 
@@ -59,22 +58,16 @@ class PostfixEval {
     int n, num;
     switch (operator) {
       case '+':
-        //System.out.println("[Add] " + operand1 + " " + operator + " " + operand2);
         return operand1 + operand2;
       case '-':
-        //System.out.println("[Subtract] " + operand1 + " " + operator + " " + operand2);
         return operand1 - operand2;
       case '*':
-        //System.out.println("[Multiply] " + operand1 + " " + operator + " " + operand2);
         return operand1 * operand2;
       case '/':
-        //System.out.println("[Divide] " + operand1 + " " + operator + " " + operand2);
         return operand1 / operand2;
       case '%':
-        //System.out.println("[Modulo] " + operand2 + " " + operator + " " + operand1);
         return operand1 % operand2;
       case '^':
-        //System.out.println("[Exponentiation] " + operand1 + " " + operator + " " + operand2);
         if (operand1 < 1) // if base is 0 or negative, return 0
           return 0;
         if (operand2 < 1) // if exponent is 0 or negative, return 1
@@ -122,17 +115,15 @@ class PostfixEval {
     return (op) ? 1 : 0;
   }
 
-  private static Boolean checkForDivError (char operator, String op1, String op2) {
-    if ( (getIntegerFromString(op2) == 0) && operator == '/') { // error check 1: check if division operator is in use and if divisor is a zero
-      //System.out.println("[Error] Division by zero detected!");
+  private static Boolean checkForDivError (char operator, int op2) {
+    if ( op2 == 0 && operator == '/') { // check if division operator is in use and if divisor is a zero
       return true;
     }
     return false;
   }
 
-  private static Boolean checkForModError (char operator, String op1, String op2) {
-    if ( (getIntegerFromString(op2) == 0) && operator == '%') { // error check 1: check if division operator is in use and if divisor is a zero
-      //System.out.println("[Error] Modulo by zero detected!");
+  private static Boolean checkForModError (char operator, int op2) {
+    if ( op2 == 0 && operator == '%') { // check if modulo operator is in use and if second operand is a zero
       return true;
     }
     return false;
@@ -144,7 +135,10 @@ class PostfixEval {
   
   public static int startEvaluatePostfix (Queue input, Stack output) {
     int i = 0;
+    int op_1, op_2;
     int result = 0;
+    int negCtr = 0;
+
     errorCheck = false;
 
     String scanToken = new String();
@@ -153,53 +147,54 @@ class PostfixEval {
     String exp = new String();
 
     do {
-      System.out.println("[Input Queue] " + i + "/" + input.getSize() + ": " + input.getValue(i)); // debugging purposes only
       scanToken = input.getValue(i);
 
-      System.out.println("[scanToken index 0] = " + scanToken.charAt(0) );
-
-      if (!isOperator(scanToken.charAt(0)) && getPostfixOperatorType(scanToken.charAt(0)) != '!') { // check if scanned token is an operand
-        System.out.println("[Operand " + scanToken + "] " + scanToken);
+      if (!isOperator(scanToken.charAt(0))) // check if scanned token is an operand
         output.push(scanToken);
-      }
   
       else { // check if scanned token is an operator
-        System.out.println("[Operator " + scanToken + "] " + scanToken);
-        op2 = output.pop();
-        op1 = output.pop();
+        if ( (scanToken.charAt(0) != '!' && scanToken.length() == 1) || checkForNeg ) { // skips this section if it's a negation operator
+          op2 = output.pop();
+          op1 = output.pop();
+          op_1 = getIntegerFromString(op1);
+          op_2 = getIntegerFromString(op2);
 
-        if (getPostfixOperatorType(scanToken.charAt(0)) == '!' && scanToken.length() == 1 && op1 == null || op2 == null) {
-          op1 = "0";
-          op2 = "0";
-        }
+          errorCheck = (checkForDivError(scanToken.charAt(0), op_2) || checkForModError(scanToken.charAt(0), op_2));
+          if (!errorCheck) {
+            switch (getPostfixOperatorType(scanToken.charAt(0))) {
+              case 1:     // for arithmetic calculations
+                result = doArithmetic(op_1, op_2, scanToken.charAt(0));
+                break;
+              case 2:     // for relational and logical calculations
+                if (negCtr % 2 != 0) // negate result for odd-numbered reptitions of negation operator
+                  result *= 0;
 
-        System.out.println("[Operand A = " + op1);
-        System.out.println("[Operand B = " + op2);
-
-        errorCheck = (checkForDivError(scanToken.charAt(0), op1, op2) || checkForModError(scanToken.charAt(0), op1, op2));
-        System.out.println("[ErrorCheck] " + errorCheck); // debugging purposes only
-        if (!errorCheck) {
-          switch (getPostfixOperatorType(scanToken.charAt(0))) {
-            case 1:     // for arithmetic calculations
-              result = doArithmetic(getIntegerFromString(op1), getIntegerFromString(op2), scanToken.charAt(0));
-              break;
-            case 2:     // for relational and logical calculations
-              if (scanToken.charAt(0) == '!' && scanToken.length() == 1)
-                result = doNegation(getIntegerFromString(op2));
-              else
-                result = doRelLogic(getIntegerFromString(op1), getIntegerFromString(op2), scanToken);
-            default:
-              break;
+                if (scanToken.charAt(0) == '!' && scanToken.length() == 1)
+                  result = doNegation(op_2);
+                else
+                  result = doRelLogic(op_1, op_2, scanToken);
+              default:
+                break;
+            }
           }
-          System.out.println("[Arithmetic Result] = " + result);
+
           exp = Integer.toString(result);
           output.push(exp);
+          checkForNeg = false;
+        }
+
+        else { // counts how many consecutive negation operators are there
+          checkForNeg = true;
+          negCtr++;
         }
       }
-      
-      i++;
 
-    } while (i < input.getSize() && !errorCheck);
+      if ((errorCheck || checkForNeg) && i == input.getSize() - 1)
+        i = 0;
+      else
+        i++;
+      
+    } while (i < input.getSize() && !errorCheck || checkForNeg);
 
     if (errorCheck)
       System.out.println("Division by zero error!");
@@ -207,15 +202,3 @@ class PostfixEval {
     return result;
   }
 }
-
-/*
-1.  Scan the postfix expression from left to right.
-
-2.  If the scanned token is an operand, push it to the stack.
-
-3.  If the scanned token is an operator, pop the top two values in the stack.
-    Then, evaluate the operator.
-    Finally, push the result back to the stack.
-
-4.  If all tokens are processed, pop the remaining number from the stack. It is the final answer.
-*/
