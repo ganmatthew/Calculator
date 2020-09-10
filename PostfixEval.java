@@ -1,248 +1,365 @@
-class PostfixEval {
-  private static Boolean overrideLoop = false;
-  private static Boolean errorCheck = false;
-  private static Boolean checkForNeg = false;
-  private static Boolean logsEnabled = false;
-
-  public PostfixEval() {};
-
-  private static void displayStack (Stack output) {
-    if (logsEnabled) {
-      int i;
-      if (output.getSize() < 1)
-        System.out.println("[Stack empty]");  
-      else {
-        for (i = 0; i < output.getSize(); i++)
-          System.out.println("[Stack index "+ i + "/" + output.getSize() + "] " + output.getValue(i));
-      }
-      System.out.println();
-    }
-  }
-
-  private static int getIntegerFromString (String t) {
-    if (t == null) {
-      t = "0";
-    }
-    return Integer.parseInt(t);
-  }
-
-  private static Boolean isOperator(char c) {
-    switch (c) {
-      case '(':
-      case ')':
-      case '^':
-      case '*':
-      case '/':
-      case '%':
-      case '+':
-      case '-':
-      case '<':
-      case '>':
-      case '=':
-      case '!':
-      case '&':
-      case '|':
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  private static int getPostfixOperatorType (char c) {
-    switch (c) {
-      case '^':
-      case '*':
-      case '/':
-      case '%':
-      case '+':
-      case '-':
-        return 1;
-      case '<':
-      case '>':
-      case '=':
-      case '&':
-      case '|':
-      case '!':
-        return 2;
-      default:
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+public class PostfixEval
+{
+    static int opValue (String s)
+    {
+        //System.out.println(s);
+        if (s.contains("!"))
+            return 7;
+        if (s.contains("^"))
+            return 6;
+        if (s.contains("*") || s.contains("/") || s.contains("%"))
+            return 5;
+        if (s.contains("+") || s.contains("-"))
+            return 4;
+        if (s.contains("==") || s.contains("!="))
+            return 3;
+        if (s.contains("<") || s.contains("<=") || s.contains(">") || s.contains(">="))
+            return 2;
+        if (s.contains("&&") || s.contains("||"))
+            return 1;
         return 0;
     }
-  }
-   
-  private static int doArithmetic (int operand1, int operand2, char operator) {
-    int n, num;
-    System.out.print((logsEnabled) ? String.format("[Arithmetic]: %d %c %d \n", operand1, operator, operand2) : "");
-    switch (operator) {
-      case '+':
-        return operand1 + operand2;
-      case '-':
-        return operand1 - operand2;
-      case '*':
-        return operand1 * operand2;
-      case '/':
-        return operand1 / operand2;
-      case '%':
-        return operand1 % operand2;
-      case '^':
-        if (operand1 < 1) // if base is 0 or negative, return 0
-          return 0;
-        if (operand2 < 1) // if exponent is 0 or negative, return 1
-          return 1;
-        num = operand1;  
-        for (n = 0; n < operand2 - 1; ++n)
-          num *= operand1;
-        return num;
-      default:
-        return 0;
+
+    static String LessThan(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            return sB > sA ? "1" : "0";
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
     }
-  }
 
-  private static int doRelLogic (int operand1, int operand2, String operator) {
-    int value = Integer.compare(operand1, operand2);
-    Boolean op1 = (operand1 > 0) ? true : false;
-    Boolean op2 = (operand2 > 0) ? true : false;
+    static String GreaterThan(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
 
-    System.out.print((logsEnabled) ? String.format("[RelLogic]: %d %s %d\n", operand1, operator, operand2) : "");
+            return sB < sA ? "1" : "0";
+        }
+        catch (Exception e)
+        {
 
-    switch (operator) {
-      case ">":
-        return (value > 0) ? 1 : 0;     // true if result is positive (greater than)
-      case ">=":
-        return (value >= 0) ? 1 : 0;    // true if result is 0 or positive (greater than equals)
-      case "!=":
-        return (op1 != op2) ? 1 : 0;    // true if result is 0 (not equals)
-      case "==":
-        return (value == 0) ? 1 : 0;    // true if result is 0 (equals)
-      case "<=":
-        return (value <= 0) ? 1 : 0;    // true if result is 0 or negative (less than equals)
-      case "<":
-        return (value < 0) ? 1 : 0;     // true if result is negative (less than)
+        }
+        return null;
+    }
 
-      case "&&":
-        return (op1 && op2) ? 1 : 0;    // true based on result after conjunction
-      case "||":
-        return (op1 || op2) ? 1 : 0;    // true based on result after disjunction
-      default:
-        return 0;
+    static String GreaterThanOrEqual(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            return sB <= sA ? "1" : "0";
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+    static String LessThanOrEqual(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            return sB >= sA ? "1" : "0";
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+    static String BinaryAnd(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            return (sB == 1) && (sA == 1) ? "1" : "0";
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+    static String Negation(String a)
+    {
+        return a.contentEquals("0") ? "1" : "0";
+    }
+
+    static String BinaryOr(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            return (sB == 1) || (sA == 1) ? "1" : "0";
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+    static String EqualTo(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            return sB == sA ? "1" : "0";
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+    static String NotEqualTo(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            System.out.println(sA + " != " + sB);
+
+            return sB == sA ? "0" : "1";
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+    static String Addition(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            return Integer.toString(sA + sB);
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+    static String Subtraction(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            //System.out.println(a + "-" + b);
+
+            return Integer.toString(sB - sA);
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+    static String Multiplication(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            return Integer.toString(sA * sB);
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+    static String Division(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            return Integer.toString(sB / sA);
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+    static String Modulo(String a, String b)
+    {
+        try
+        {
+            int sA = Integer.valueOf(a);
+            int sB = Integer.valueOf(b);
+
+            return Integer.toString(sB % sA);
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+    static String Exponent(String a, String b)
+    {
+        try
+        {
+            double sA = Double.valueOf(a);
+            double sB = Double.valueOf(b);
+
+            double res = Math.pow(sB, sA);
+
+            int retval = (int)res;
+
+            return Integer.toString(retval);
+        }
+        catch (Exception e)
+        {
+
+        }
+        return null;
+    }
+
+
+    public static String PostFixEvaluation(String s)
+    {
         
-    }
-  }
+        String inputstr = new String();
 
-  private static int doNegation (int operand) {
-    Boolean op = (operand > 0) ? false : true;
-    return (op) ? 1 : 0;
-  }
+        inputstr = s;
 
-  private static Boolean checkForDivError (char operator, int op2) {
-    if ( op2 == 0 && operator == '/') { // check if division operator is in use and if divisor is a zero
-      return true;
-    }
-    return false;
-  }
+        Queue in = new Queue();
+        Stack st = new Stack();
 
-  private static Boolean checkForModError (char operator, int op2) {
-    if ( op2 == 0 && operator == '%') { // check if modulo operator is in use and if second operand is a zero
-      return true;
-    }
-    return false;
-  }
+        Pattern r = Pattern.compile("[0-9]+|[%\\^()+*/-]|([=&|])\\1|[!<>]+=?");
+        Matcher m = r.matcher(inputstr);
 
-  public static Boolean getErrorType () {
-    return errorCheck;
-  }
-  
-  public static int startEvaluatePostfix (Queue input, Stack output, Boolean logToggle) {
-    int op_1, op_2, i = 0;
-    int result = 0;
-    int negCtr = 0;
+        while (m.find())
+        {
+            in.Enqueue(m.group());
+        }
 
-    errorCheck = false;
+        //while (!in.isEmpty()) System.out.println(in.Dequeue());
 
-    logsEnabled = logToggle;
-
-    String scanToken = new String();
-    String op1 = new String();
-    String op2 = new String();
-    String exp = new String();
-
-    do {
-      displayStack(output);
-      scanToken = input.getValue(i);
-      System.out.print((logsEnabled) ? String.format("[getValueFromStack]: index %d = %s\n", i, scanToken) : "");
-
-      if (!isOperator(scanToken.charAt(0))) {// check if scanned token is an operand
-        output.push(scanToken);
-        System.out.print((logsEnabled) ? String.format("[pushToken]: %s", scanToken) : "");
-      }
-  
-      else { // check if scanned token is an operator
-        System.out.print((logsEnabled) ? String.format("[operatorCheck]: scanToken.charAt(0) == '!' -> %s\n", scanToken) : "");
-        System.out.print((logsEnabled) ? String.format("[operatorCheck]: scanToken.length() == 1' -> %s", ((scanToken.length()) == 1 ) ? "FALSE" : "TRUE" ) : "");
-        System.out.print((logsEnabled) ? String.format("[operatorCheck]: checkForNeg -> %s", ((checkForNeg) ? "TRUE" : "FALSE" )) : "");
-        if ( !(scanToken.charAt(0) == '!' && scanToken.length() == 1) || checkForNeg ) { // true if operator is anything but '!', and should allow "!=" operator
-          op2 = output.pop();
-          op1 = output.pop();
-          op_1 = getIntegerFromString(op1);
-          op_2 = getIntegerFromString(op2);
-
-          errorCheck = (checkForDivError(scanToken.charAt(0), op_2) || checkForModError(scanToken.charAt(0), op_2));
-          if (!errorCheck) {
-            switch (getPostfixOperatorType(scanToken.charAt(0))) {
-              case 1:     // for arithmetic calculations
-                result = doArithmetic(op_1, op_2, scanToken.charAt(0)); 
-                System.out.print((logsEnabled) ? String.format("[Arithmetic]: %d\n", result) : "");
-                break;
-              case 2:     // for relational and logical calculations
-                if (negCtr % 2 != 0) {// negate result for odd-numbered reptitions of negation operator
-                  System.out.print((logsEnabled) ? String.format("[Negation]: %d *= 0\n", result) : "");
-                  result *= 0;
-                }
-
-                if (scanToken.charAt(0) == '!' && scanToken.length() == 1) {
-                  result = doNegation(op_2);
-                  System.out.print((logsEnabled) ? String.format("[Negation]: %d\n", result) : "");
-                }
-                else {
-                  result = doRelLogic(op_1, op_2, scanToken);
-                  System.out.print((logsEnabled) ? String.format("[RelLogic]: %d\n", result) : "");
-                }
-              default:
-                break;
+        while (!in.isEmpty())
+        {
+            if (opValue(in.peek()) == 0) //number
+            {
+                st.push(in.Dequeue());
             }
-          }
-
-          exp = Integer.toString(result);
-          output.push(exp);
-
-          System.out.print((logsEnabled) ? "[checkForNeg]: TRUE -> FALSE\n" : "");
-          checkForNeg = false;
+            else //operand
+            {
+                switch(in.Dequeue())
+                {
+                    case ">":
+                        st.push(LessThan(st.pop(), st.pop()));
+                        break;
+                    case "<":
+                        st.push(GreaterThan(st.pop(), st.pop()));
+                        break;
+                    case "&&":
+                        st.push(BinaryAnd(st.pop(), st.pop()));
+                        break;
+                    case "!":
+                        st.push(Negation(st.pop()));
+                        break;
+                    case "||":
+                        st.push(BinaryOr(st.pop(), st.pop()));
+                        break;
+                    case ">=":
+                        st.push(LessThanOrEqual(st.pop(), st.pop()));
+                        break;
+                    case "<=":
+                        st.push(GreaterThanOrEqual(st.pop(), st.pop()));
+                        break;
+                    case "==":
+                        st.push(EqualTo(st.pop(), st.pop()));
+                        break;
+                    case "!=":
+                        st.push(NotEqualTo(st.pop(), st.pop()));
+                        break;
+                    case "+":
+                        st.push(Addition(st.pop(), st.pop()));
+                        break;
+                    case "-":
+                        st.push(Subtraction(st.pop(), st.pop()));
+                        break;
+                    case "*":
+                        st.push(Multiplication(st.pop(), st.pop()));
+                        break;
+                    case "/":
+                        if (st.peek().contentEquals("0"))
+                        {
+                            while (!in.isEmpty()) in.Dequeue();
+                            while (!st.isEmpty()) st.pop();
+                            st.push("error");
+                        }
+                        else
+                        {
+                            st.push(Division(st.pop(), st.pop()));
+                            break;
+                        }
+                        break;
+                    case "%":
+                        if (st.peek().contentEquals("0"))
+                        {
+                            while (!in.isEmpty()) in.Dequeue();
+                            while (!st.isEmpty()) st.pop();
+                            st.push("error");
+                        }
+                        else
+                        {
+                            st.push(Modulo(st.pop(), st.pop()));
+                            break;
+                        }
+                        break;
+                    case "^":
+                        st.push(Exponent(st.pop(), st.pop()));
+                        break;
+                };
+                
+            }
         }
 
-        else { // counts how many consecutive negation operators are there
-          System.out.print((logsEnabled) ? "[checkForNeg]: FALSE -> TRUE\n" : "");
-          checkForNeg = true;
-          negCtr++;
-          System.out.print((logsEnabled) ? String.format("[negCtr]: %d\n", negCtr) : "");
-        }
-      }
-      
-      displayStack(output);
-      System.out.print((logsEnabled) ? String.format("[errorCheck]: %s", (errorCheck) ? "TRUE\n" : "FALSE\n") : "");
-      System.out.print((logsEnabled) ? String.format("[checkForNeg]: %s", (checkForNeg) ? "TRUE\n" : "FALSE\n") : "");
-      System.out.print((logsEnabled) ? String.format("[i]: %d/%d\n\n", i, input.getSize()-1) : "");
-
-      if ((errorCheck || checkForNeg) && i == input.getSize() - 1)
-        i = 0;
-      else if ((errorCheck || checkForNeg) && !(i == input.getSize() - 1))
-        overrideLoop = true;
-      else
-        i++;
-      
-    } while ((i < input.getSize() && !errorCheck || checkForNeg) && !overrideLoop);
-
-    if (errorCheck)
-      System.out.println("Division by zero error!");
-
-    return result;
-  }
+        return st.peek();
+    }
 }

@@ -2,6 +2,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 public class InfixCon
 {
+    static StringBuilder sb = new StringBuilder();
+    public InfixCon() {}
+
     static int opValue (String s)
     {
         //System.out.println(s);
@@ -22,13 +25,10 @@ public class InfixCon
         return 0;
     }
 
-    public static String ConvertInfixToPostFix(String s)
+    public static String ConvertInfixToPostFix(String s, Stack op, Queue in, Queue out)
     {
+        int i;
         String output = "";
-
-        Queue in = new Queue();
-        Stack op = new Stack();
-        Queue out = new Queue();
 
         Pattern r = Pattern.compile("[0-9]+|[%\\^()+*/-]|([=&|])\\1|[!<>]+=?");
         Matcher m = r.matcher(s);
@@ -86,20 +86,18 @@ public class InfixCon
             out.Enqueue(op.pop());
         }
 
-        /*
-        while (!out.isEmpty());
+        for (i = 0; i < out.getSize(); i++)
         {
-            output += out.Dequeue();
+            output += out.getValue(i);
             output += " ";
         }
-        */
         
+        /*
         int i;
         for (i = 0; i < out.getSize(); i++) {
           output += out.getValue(i);
-          output += " ";
         }
-        
+        */
 
         return output;
 
