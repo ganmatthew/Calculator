@@ -1,8 +1,23 @@
 class PostfixEval {
+  private static Boolean overrideLoop = false;
   private static Boolean errorCheck = false;
   private static Boolean checkForNeg = false;
+  private static Boolean logsEnabled = false;
 
   public PostfixEval() {};
+
+  private static void displayStack (Stack output) {
+    if (logsEnabled) {
+      int i;
+      if (output.getSize() < 1)
+        System.out.println("[Stack empty]");  
+      else {
+        for (i = 0; i < output.getSize(); i++)
+          System.out.println("[Stack index "+ i + "/" + output.getSize() + "] " + output.getValue(i));
+      }
+      System.out.println();
+    }
+  }
 
   private static int getIntegerFromString (String t) {
     if (t == null) {
@@ -56,6 +71,7 @@ class PostfixEval {
    
   private static int doArithmetic (int operand1, int operand2, char operator) {
     int n, num;
+    System.out.print((logsEnabled) ? String.format("[Arithmetic]: %d %c %d \n", operand1, operator, operand2) : "");
     switch (operator) {
       case '+':
         return operand1 + operand2;
@@ -85,6 +101,8 @@ class PostfixEval {
     int value = Integer.compare(operand1, operand2);
     Boolean op1 = (operand1 > 0) ? true : false;
     Boolean op2 = (operand2 > 0) ? true : false;
+
+    System.out.print((logsEnabled) ? String.format("[RelLogic]: %d %s %d\n", operand1, operator, operand2) : "");
 
     switch (operator) {
       case ">":
@@ -133,13 +151,14 @@ class PostfixEval {
     return errorCheck;
   }
   
-  public static int startEvaluatePostfix (Queue input, Stack output) {
-    int i = 0;
-    int op_1, op_2;
+  public static int startEvaluatePostfix (Queue input, Stack output, Boolean logToggle) {
+    int op_1, op_2, i = 0;
     int result = 0;
     int negCtr = 0;
 
     errorCheck = false;
+
+    logsEnabled = logToggle;
 
     String scanToken = new String();
     String op1 = new String();
@@ -147,13 +166,20 @@ class PostfixEval {
     String exp = new String();
 
     do {
+      displayStack(output);
       scanToken = input.getValue(i);
+      System.out.print((logsEnabled) ? String.format("[getValueFromStack]: index %d = %s\n", i, scanToken) : "");
 
-      if (!isOperator(scanToken.charAt(0))) // check if scanned token is an operand
+      if (!isOperator(scanToken.charAt(0))) {// check if scanned token is an operand
         output.push(scanToken);
+        System.out.print((logsEnabled) ? String.format("[pushToken]: %s", scanToken) : "");
+      }
   
       else { // check if scanned token is an operator
-        if ( (scanToken.charAt(0) != '!' && scanToken.length() == 1) || checkForNeg ) { // skips this section if it's a negation operator
+        System.out.print((logsEnabled) ? String.format("[operatorCheck]: scanToken.charAt(0) == '!' -> %s\n", scanToken) : "");
+        System.out.print((logsEnabled) ? String.format("[operatorCheck]: scanToken.length() == 1' -> %s", ((scanToken.length()) == 1 ) ? "FALSE" : "TRUE" ) : "");
+        System.out.print((logsEnabled) ? String.format("[operatorCheck]: checkForNeg -> %s", ((checkForNeg) ? "TRUE" : "FALSE" )) : "");
+        if ( !(scanToken.charAt(0) == '!' && scanToken.length() == 1) || checkForNeg ) { // true if operator is anything but '!', and should allow "!=" operator
           op2 = output.pop();
           op1 = output.pop();
           op_1 = getIntegerFromString(op1);
@@ -163,16 +189,23 @@ class PostfixEval {
           if (!errorCheck) {
             switch (getPostfixOperatorType(scanToken.charAt(0))) {
               case 1:     // for arithmetic calculations
-                result = doArithmetic(op_1, op_2, scanToken.charAt(0));
+                result = doArithmetic(op_1, op_2, scanToken.charAt(0)); 
+                System.out.print((logsEnabled) ? String.format("[Arithmetic]: %d\n", result) : "");
                 break;
               case 2:     // for relational and logical calculations
-                if (negCtr % 2 != 0) // negate result for odd-numbered reptitions of negation operator
+                if (negCtr % 2 != 0) {// negate result for odd-numbered reptitions of negation operator
+                  System.out.print((logsEnabled) ? String.format("[Negation]: %d *= 0\n", result) : "");
                   result *= 0;
+                }
 
-                if (scanToken.charAt(0) == '!' && scanToken.length() == 1)
+                if (scanToken.charAt(0) == '!' && scanToken.length() == 1) {
                   result = doNegation(op_2);
-                else
+                  System.out.print((logsEnabled) ? String.format("[Negation]: %d\n", result) : "");
+                }
+                else {
                   result = doRelLogic(op_1, op_2, scanToken);
+                  System.out.print((logsEnabled) ? String.format("[RelLogic]: %d\n", result) : "");
+                }
               default:
                 break;
             }
@@ -180,21 +213,32 @@ class PostfixEval {
 
           exp = Integer.toString(result);
           output.push(exp);
+
+          System.out.print((logsEnabled) ? "[checkForNeg]: TRUE -> FALSE\n" : "");
           checkForNeg = false;
         }
 
         else { // counts how many consecutive negation operators are there
+          System.out.print((logsEnabled) ? "[checkForNeg]: FALSE -> TRUE\n" : "");
           checkForNeg = true;
           negCtr++;
+          System.out.print((logsEnabled) ? String.format("[negCtr]: %d\n", negCtr) : "");
         }
       }
+      
+      displayStack(output);
+      System.out.print((logsEnabled) ? String.format("[errorCheck]: %s", (errorCheck) ? "TRUE\n" : "FALSE\n") : "");
+      System.out.print((logsEnabled) ? String.format("[checkForNeg]: %s", (checkForNeg) ? "TRUE\n" : "FALSE\n") : "");
+      System.out.print((logsEnabled) ? String.format("[i]: %d/%d\n\n", i, input.getSize()-1) : "");
 
       if ((errorCheck || checkForNeg) && i == input.getSize() - 1)
         i = 0;
+      else if ((errorCheck || checkForNeg) && !(i == input.getSize() - 1))
+        overrideLoop = true;
       else
         i++;
       
-    } while (i < input.getSize() && !errorCheck || checkForNeg);
+    } while ((i < input.getSize() && !errorCheck || checkForNeg) && !overrideLoop);
 
     if (errorCheck)
       System.out.println("Division by zero error!");

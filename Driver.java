@@ -2,6 +2,10 @@ import java.util.Scanner;
 
 public class Driver {
   private static Scanner kb = new Scanner (System.in);
+  private static Boolean logsEnabled = false;
+
+  private static String LOG_COMMAND = "logs";
+  private static String QUIT_COMMAND = "quit";
 
   private static void manualQueueing (String exp, Queue queue) {
     int i = 0;
@@ -9,7 +13,7 @@ public class Driver {
     String str;
 
     do {
-      System.out.println(i + "/" + splitArray.length);
+      System.out.print((logsEnabled) ? i + "/" + splitArray.length + "\n" : 0);
       str = splitArray[i];
       queue.Enqueue(str);
       i++;
@@ -28,20 +32,24 @@ public class Driver {
 
       String infixExp = new String();
       String postfixExp = new String();
-      String QUIT_COMMAND = "quit";
 
       System.out.println();
       infixExp = kb.nextLine();
       //postfixExp = kb.nextLine();
 
+      if (infixExp.equalsIgnoreCase(LOG_COMMAND)) {
+        logsEnabled = !logsEnabled;
+        infixExp = kb.nextLine();
+      }
+
       if (!infixExp.equalsIgnoreCase(QUIT_COMMAND)) {
-      //if (!postfixExp.equalsIgnoreCase(QUIT_COMMAND)) {
+      //if (!postfixExp.equalsIgnoreCase(QUIT_COMMAND))
         postfixExp = InfixCon.ConvertInfixToPostFix(infixExp, conStack, infixQueue, postfixQueue);
         //manualQueueing (postfixExp, postfixQueue);
 
         System.out.println(postfixExp);
 
-        result = PostfixEval.startEvaluatePostfix(postfixQueue, evalStack);
+        result = PostfixEval.startEvaluatePostfix(postfixQueue, evalStack, logsEnabled);
 
         if (!PostfixEval.getErrorType())
           System.out.println(result);
